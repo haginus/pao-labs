@@ -1,7 +1,15 @@
+package order;
+
+import paymentMethods.PaymentMethod;
+import paymentMethods.PaymentMethodCard;
+import paymentMethods.PaymentMethodCash;
+import products.Product;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Order {
+    int id;
     double totalPrice = 0;
     List<ProductItem> items;
     PaymentMethod paymentMethod;
@@ -48,8 +56,24 @@ public class Order {
         return items;
     }
 
-    public Order() {
+    public int getId() {
+        return id;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public Order(int id) {
+        this.id = id;
         this.items = new ArrayList<ProductItem>();
+    }
+
+    public Order(int id, double totalPrice, List<ProductItem> items, PaymentMethod paymentMethod) {
+        this.id = id;
+        this.totalPrice = totalPrice;
+        this.items = items;
+        this.paymentMethod = paymentMethod;
     }
 
     @Override
@@ -60,7 +84,7 @@ public class Order {
             str.append(item.toString());
         }
         str.append(String.format("TOTAL: %.2f RON", totalPrice));
-        if(paymentMethod != null) str.append("\n" + paymentMethod);
+        if(paymentMethod != null) str.append("\n").append(paymentMethod);
         return new String(str);
     }
 }

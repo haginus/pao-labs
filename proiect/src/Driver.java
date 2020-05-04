@@ -1,4 +1,9 @@
-import java.sql.SQLOutput;
+import order.Order;
+import order.ProductItem;
+import priceConventions.PricePerQuantity;
+import priceConventions.PricePerUnit;
+import products.Product;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -10,7 +15,7 @@ public class Driver {
     }
 
     public static void menu(CashRegister register) {
-        System.out.println("\n1. Listati produsele\n2. Adauga produs\n3. Editeaza Produs\n4. Sterge produs\n5. Comanda noua\n6. Istoric comenzi");
+        System.out.println("\n1. Listati produsele\n2. Adauga produs\n3. Editeaza Produs\n4. Sterge produs\n5. Comanda noua\n6. Istoric comenzi\n7. Adauga categorie\n8. Listare categorii\n9. Audit\n10. Exit");
         Scanner scanner = new Scanner(System.in);
         int choice = scanner.nextInt();
         switch (choice) {
@@ -32,9 +37,25 @@ public class Driver {
             case 6:
                 listOrders(register);
                 break;
+            case 7:
+                addCategory(register);
+                break;
+            case 8:
+                listCategories(register);
+                break;
+            case 9:
+                listLogs(register);
+                break;
+            case 10:
+                break;
             default:
                 menu(register);
         }
+    }
+
+    private static void listLogs(CashRegister register) {
+        register.listLogs();
+        menu(register);
     }
 
     private static void listOrders(CashRegister register) {
@@ -124,13 +145,13 @@ public class Driver {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Cod bare produs: ");
         barcode = scanner.next();
-        System.out.print("Nume produs: ");
-        name = scanner.next();
-        System.out.print("Unitate masura (implicit bucata): ");
         scanner.nextLine();
+        System.out.print("Nume produs: ");
+        name = scanner.nextLine();
+        System.out.print("Unitate masura (implicit bucata): ");
         unit = scanner.nextLine();
         System.out.print("Pret: ");
-        price = scanner.nextInt();
+        price = scanner.nextDouble();
         boolean res;
         if(unit.length() == 0) {
             res = register.addProduct(barcode, name, price);
@@ -145,6 +166,20 @@ public class Driver {
     public static void listProducts(CashRegister register) {
         System.out.println("Produse in baza de date: ");
         register.listProducts();
+        menu(register);
+    }
+
+    public static void addCategory(CashRegister register) {
+        String name;
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Nume categorie: ");
+        name = scanner.nextLine();
+        register.addCategory(name);
+        menu(register);
+    }
+
+    public static void listCategories(CashRegister register) {
+        register.listCategories();
         menu(register);
     }
 }

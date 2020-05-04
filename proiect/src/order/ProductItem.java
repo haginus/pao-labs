@@ -1,3 +1,7 @@
+package order;
+
+import products.Product;
+
 public class ProductItem {
     private Product product;
     private double quantity;

@@ -1,3 +1,9 @@
+package products;
+
+import priceConventions.Price;
+import priceConventions.PricePerQuantity;
+import priceConventions.PricePerUnit;
+
 public class Product {
     private String barcode;
     private String name;
@@ -53,30 +59,8 @@ public class Product {
     }
 }
 
-class Price {
-    protected double price;
-}
 
-class PricePerUnit extends Price {
-    public PricePerUnit(double p) {
-        this.price = p;
-    }
 
-    @Override
-    public String toString() {
-        return String.format("%.2f", price) + " RON";
-    }
-}
 
-class PricePerQuantity extends Price {
-    protected String measureUnit;
-    public PricePerQuantity(double p, String unit) {
-        this.price = p;
-        this.measureUnit = unit;
-    }
 
-    @Override
-    public String toString() {
-        return String.format("%.2f", price) + " RON/" + measureUnit;
-    }
-}
+

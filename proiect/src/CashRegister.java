@@ -1,4 +1,14 @@
+import fileServices.AuditService;
+import fileServices.CategoryFileService;
+import fileServices.OrderFileService;
+import fileServices.ProductFileService;
+import order.Order;
+import productCategories.ProductCategory;
+import products.Product;
+
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -6,7 +16,31 @@ public class CashRegister {
     private HashMap<String, Product> products;
     private List<Order> orders;
     private Order currentOrder;
+    private List<ProductCategory> categories;
+    private ProductFileService productFileService = ProductFileService.getInstance();
+    private OrderFileService orderFileService = OrderFileService.getInstance();
+    private CategoryFileService categoryFileService = CategoryFileService.getInstance();
+    private AuditService auditService = AuditService.getInstance();
 
+    public void listLogs() {
+        auditService.listLogs();
+    }
+
+    public void addCategory(String name) {
+        this.categories.add(new ProductCategory(this.categories.size() + 1, name));
+        try {
+            categoryFileService.saveToFile(this.categories);
+        } catch (IOException e) {
+            System.out.println("Nu s-a putut salva in fisier.");
+        }
+        auditService.log("new_category");
+    }
+
+    public void listCategories() {
+        for(ProductCategory category : categories) {
+            System.out.println(category.getName());
+        }
+    }
 
     public boolean addProduct(String barcode, String name, double price, String... unit) {
         Product product;
@@ -15,12 +49,20 @@ public class CashRegister {
         if(this.products.containsKey(barcode))
             return false;
         this.products.put(barcode, product);
+        try {
+            productFileService.saveToFile(this.products);
+        } catch (IOException e) {
+            System.out.println(Arrays.toString(e.getStackTrace()));
+            System.out.println("Nu s-a putut salva in fisier.");
+        }
+        auditService.log("new_product");
         return true;
     }
 
     public boolean deleteProduct(String barcode) {
         if(products.containsKey(barcode)) {
             products.remove(barcode);
+            auditService.log("delete_product");
             return true;
         }
         return false;
@@ -38,7 +80,7 @@ public class CashRegister {
     }
 
     public void createNewOrder() {
-        this.currentOrder = new Order();
+        this.currentOrder = new Order(orders.size() + 1);
     }
 
     public boolean addToOrder(String barcode, double quantity) {
@@ -72,6 +114,12 @@ public class CashRegister {
 
     public void saveCurrentOrder() {
         this.orders.add(currentOrder);
+        try {
+            orderFileService.saveToFile(this.orders);
+        } catch (IOException e) {
+            System.out.println("Eroare la scrierea in fisier.");
+        }
+        auditService.log("new_order");
     }
 
     public void discardCurrentOrder() {
@@ -87,12 +135,27 @@ public class CashRegister {
     }
 
     public CashRegister() {
+        this.categories = new ArrayList<ProductCategory>();
         this.products = new HashMap<String, Product>();
         this.orders = new ArrayList<Order>();
-        /* Niste produse default */
-        this.addProduct("001", "Coca-Cola 0.5L", 3.29);
-        this.addProduct("002", "Pepsi 2.5L", 7.89);
-        this.addProduct("003", "Mere", 5.23, "kg");
-        this.addProduct("004", "Pere", 6.49, "kg");
+        this.auditService.log("login");
+        try {
+            this.categories = this.categoryFileService.loadFromFile();
+        } catch (IOException e) {
+            System.out.println("Eroare la citirea categoriilor!");
+        }
+
+        try {
+            this.products = this.productFileService.loadFromFile();
+        } catch (IOException e) {
+            System.out.println("Eroare la citirea produselor!");
+        }
+        try {
+            this.orders = this.orderFileService.loadFromFile(this.products);
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+            System.out.println("Eroare la citirea comenzilor!");
+        }
+
     }
 }

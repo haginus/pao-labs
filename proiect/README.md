@@ -1,3 +1,7 @@
+# Changelog
+- Organizat în pachete
+- Cerințe checkpoint 2
+
 # Instrucțiuni sintaxă comandă
  - ```+ <barcode> <quantity>```: Adaugă produsul corespunzător codului de bare în cantitatea specificată la comanda curentă;
  - ```- <barcode>```: Șterge produsul corespunzător codului de bare (în toată cantitatea) din comanda curentă;
