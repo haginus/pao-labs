@@ -3,7 +3,7 @@
  - Șters servicii citire/ștergere în CSV
  - Adăugat baza de date
  - Adăugat clasă serviciu pentru configurarea inițială bază de date
- - Adăugat servicii 
+ - Adăugat servicii pentru citire, inserare, editare, ștergere din baza de date
 
 ### Checkpoint 2
 - Organizat în pachete
