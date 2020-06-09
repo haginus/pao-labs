@@ -87,4 +87,8 @@ public class Order {
         if(paymentMethod != null) str.append("\n").append(paymentMethod);
         return new String(str);
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

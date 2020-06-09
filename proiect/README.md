@@ -1,6 +1,23 @@
 # Changelog
+### Checkpoint 3
+ - Șters servicii citire/ștergere în CSV
+ - Adăugat baza de date
+ - Adăugat clasă serviciu pentru configurarea inițială bază de date
+ - Adăugat servicii 
+
+### Checkpoint 2
 - Organizat în pachete
-- Cerințe checkpoint 2
+- Adăugat servicii de scriere/citire în CSV
+
+# Detalii despre baza de date
+ - Programul se conectează la baza de date MySQL ```register``` folosind user-ul ```register``` și parola ```register``` ce rulează pe ```localhost:3306```.
+ - Rulați:
+ 
+```mysql
+CREATE DATABASE register;
+CREATE USER 'register'@'localhost' IDENTIFIED BY 'register';
+GRANT ALL PRIVILEGES ON * . * TO 'register'@'localhost';
+```
 
 # Instrucțiuni sintaxă comandă
  - ```+ <barcode> <quantity>```: Adaugă produsul corespunzător codului de bare în cantitatea specificată la comanda curentă;

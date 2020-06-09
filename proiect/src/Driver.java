@@ -4,7 +4,7 @@ import priceConventions.PricePerQuantity;
 import priceConventions.PricePerUnit;
 import products.Product;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
@@ -59,9 +59,7 @@ public class Driver {
     }
 
     private static void listOrders(CashRegister register) {
-        List<Order> orders = (ArrayList<Order>) register.getOrders();
-        for(int i = 0; i < orders.size(); i++)
-            System.out.println((i+1) + ". " + orders.get(i));
+        register.listOrders();
         menu(register);
     }
 
@@ -134,7 +132,9 @@ public class Driver {
             if(unit.equals("bucata")) {
                 product.setPrice(_price);
             } else product.setPrice(_price, unit);
-            System.out.println("Produs modificat cu succes.");
+            if(register.editProduct(product)) {
+                System.out.println("Produsul a fost modificat cu succes.");
+            } else System.out.println("Eroare.");
         } else System.out.println("Produsul nu exista.");
         menu(register);
     }

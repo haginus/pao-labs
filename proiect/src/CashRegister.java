@@ -1,25 +1,24 @@
-import fileServices.AuditService;
-import fileServices.CategoryFileService;
-import fileServices.OrderFileService;
-import fileServices.ProductFileService;
+import databaseServices.AuditService;
+import databaseServices.CategoryDatabaseService;
+import databaseServices.OrderDatabaseService;
+import databaseServices.ProductDatabaseService;
 import order.Order;
 import productCategories.ProductCategory;
 import products.Product;
 
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 public class CashRegister {
     private HashMap<String, Product> products;
-    private List<Order> orders;
+    private HashMap<Integer, Order> orders;
     private Order currentOrder;
     private List<ProductCategory> categories;
-    private ProductFileService productFileService = ProductFileService.getInstance();
-    private OrderFileService orderFileService = OrderFileService.getInstance();
-    private CategoryFileService categoryFileService = CategoryFileService.getInstance();
+    private ProductDatabaseService productDatabaseService = ProductDatabaseService.getInstance();
+    private OrderDatabaseService orderDatabaseService = OrderDatabaseService.getInstance();
+    private CategoryDatabaseService categoryDatabaseService = CategoryDatabaseService.getInstance();
     private AuditService auditService = AuditService.getInstance();
 
     public void listLogs() {
@@ -27,11 +26,11 @@ public class CashRegister {
     }
 
     public void addCategory(String name) {
-        this.categories.add(new ProductCategory(this.categories.size() + 1, name));
+        ProductCategory category = new ProductCategory(0, name);
         try {
-            categoryFileService.saveToFile(this.categories);
-        } catch (IOException e) {
-            System.out.println("Nu s-a putut salva in fisier.");
+            categories = categoryDatabaseService.saveToDatabase(category);
+        } catch (SQLException e) {
+            System.out.println("Nu s-a putut salva.");
         }
         auditService.log("new_category");
     }
@@ -48,24 +47,36 @@ public class CashRegister {
         else product = new Product(barcode, name, price);
         if(this.products.containsKey(barcode))
             return false;
-        this.products.put(barcode, product);
         try {
-            productFileService.saveToFile(this.products);
-        } catch (IOException e) {
-            System.out.println(Arrays.toString(e.getStackTrace()));
-            System.out.println("Nu s-a putut salva in fisier.");
+            this.products = productDatabaseService.addToDatabase(product);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Nu s-a putut salva în baza de date.");
         }
         auditService.log("new_product");
         return true;
     }
 
+    public boolean editProduct(Product product) {
+        try {
+            this.products = productDatabaseService.editInDatabase(product);
+            auditService.log("edit_product");
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Nu s-a putut salva în baza de date.");
+            return false;
+        }
+    }
+
     public boolean deleteProduct(String barcode) {
-        if(products.containsKey(barcode)) {
-            products.remove(barcode);
+        try {
+            this.products = productDatabaseService.deleteFromDatabaseByBarcode(barcode);
             auditService.log("delete_product");
             return true;
+        } catch (SQLException e) {
+            return false;
         }
-        return false;
     }
 
     public void listProducts() {
@@ -75,12 +86,21 @@ public class CashRegister {
         }
         System.out.println(str);
     }
+
     public Product getProduct(String barcode) {
         return this.products.getOrDefault(barcode, null);
     }
 
+    public void listOrders() {
+        StringBuilder str = new StringBuilder();
+        for(Order order : orders.values()) {
+            str.append(order.toString());
+        }
+        System.out.println(str);
+    }
+
     public void createNewOrder() {
-        this.currentOrder = new Order(orders.size() + 1);
+        this.currentOrder = new Order(0);
     }
 
     public boolean addToOrder(String barcode, double quantity) {
@@ -95,9 +115,7 @@ public class CashRegister {
     public boolean removeFromOrder(String barcode) {
         Product product = getProduct(barcode);
         if(product != null) {
-            if(this.currentOrder.removeItem(product))
-                return true;
-            else return false;
+            return this.currentOrder.removeItem(product);
         }
         return false;
     }
@@ -113,20 +131,21 @@ public class CashRegister {
     }
 
     public void saveCurrentOrder() {
-        this.orders.add(currentOrder);
         try {
-            orderFileService.saveToFile(this.orders);
-        } catch (IOException e) {
-            System.out.println("Eroare la scrierea in fisier.");
+            this.orders = orderDatabaseService.addToDatabase(currentOrder);
+            auditService.log("new_order");
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("Eroare.");
         }
-        auditService.log("new_order");
+
     }
 
     public void discardCurrentOrder() {
         currentOrder = null;
     }
 
-    public List<Order> getOrders() {
+    public HashMap<Integer, Order> getOrders() {
         return orders;
     }
 
@@ -137,25 +156,10 @@ public class CashRegister {
     public CashRegister() {
         this.categories = new ArrayList<ProductCategory>();
         this.products = new HashMap<String, Product>();
-        this.orders = new ArrayList<Order>();
+        this.orders = new HashMap<>();
         this.auditService.log("login");
-        try {
-            this.categories = this.categoryFileService.loadFromFile();
-        } catch (IOException e) {
-            System.out.println("Eroare la citirea categoriilor!");
-        }
-
-        try {
-            this.products = this.productFileService.loadFromFile();
-        } catch (IOException e) {
-            System.out.println("Eroare la citirea produselor!");
-        }
-        try {
-            this.orders = this.orderFileService.loadFromFile(this.products);
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Eroare la citirea comenzilor!");
-        }
-
+        this.categories = this.categoryDatabaseService.getCategories();
+        this.products = this.productDatabaseService.getProducts();
+        this.orders = this.orderDatabaseService.getOrders();
     }
 }
